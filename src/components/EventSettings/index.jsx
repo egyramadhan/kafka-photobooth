@@ -6,9 +6,11 @@ function EventSettings() {
     eventName, 
     footerText, 
     selectedTemplate,
+    countdownDuration,
     setEventName, 
     setFooterText,
-    setSelectedTemplate 
+    setSelectedTemplate,
+    setCountdownDuration
   } = useEventStore()
 
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -76,6 +78,34 @@ function EventSettings() {
               {footerText.length}/60
             </span>
           </div>
+        </div>
+
+        {/* Countdown Duration */}
+        <div>
+          <label htmlFor="countdownDuration" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Countdown Duration</span>
+          </label>
+          <div className="relative">
+            <select
+              id="countdownDuration"
+              value={countdownDuration}
+              onChange={(e) => setCountdownDuration(Number(e.target.value))}
+              className="w-full pl-4 pr-10 py-3 bg-slate-950/40 border border-slate-800/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 text-slate-100 transition-all duration-200 text-sm font-medium appearance-none cursor-pointer"
+            >
+              <option value={3}>3 seconds</option>
+              <option value={5}>5 seconds</option>
+              <option value={10}>10 seconds</option>
+            </select>
+            <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <p className="text-[10px] text-slate-600 mt-1">
+            Time before capturing photo
+          </p>
         </div>
 
         {/* Date & Template Row */}

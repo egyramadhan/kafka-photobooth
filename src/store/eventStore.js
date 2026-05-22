@@ -9,17 +9,20 @@ export const useEventStore = create(
       eventName: '',
       footerText: '',
       selectedTemplate: 'classic-black',
+      countdownDuration: 3,
       
       // Actions
       setEventName: (name) => set({ eventName: name }),
       setFooterText: (text) => set({ footerText: text }),
       setSelectedTemplate: (template) => set({ selectedTemplate: template }),
+      setCountdownDuration: (duration) => set({ countdownDuration: duration }),
       
       // Reset all settings
       resetSettings: () => set({
         eventName: '',
         footerText: '',
         selectedTemplate: 'classic-black',
+        countdownDuration: 3,
       }),
     }),
     {

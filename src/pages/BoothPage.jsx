@@ -2,12 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { useRef, useEffect, useState } from 'react'
 import { useCamera } from '../hooks/useCamera'
 import { useCapture } from '../hooks/useCapture'
+import { useEventStore } from '../store/eventStore'
 import LivePreview from '../components/LivePreview'
 import CountdownOverlay from '../components/CountdownOverlay'
 
 function BoothPage() {
   const navigate = useNavigate()
   const { stream, error } = useCamera()
+  const { countdownDuration } = useEventStore()
   const videoRef = useRef(null)
   const [showFlash, setShowFlash] = useState(false)
 
@@ -23,8 +25,8 @@ function BoothPage() {
     cleanup,
   } = useCapture({
     totalPhotos: 4,
-    initialCountdown: 5,
-    captureInterval: 3,
+    initialCountdown: countdownDuration,
+    captureInterval: countdownDuration,
     onCaptureComplete: (photos) => {
       console.log('Capture complete! Photos:', photos.length)
       // Navigate to result page after a short delay
