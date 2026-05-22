@@ -15,22 +15,182 @@ export async function printStrip(dataURL, options = {}) {
   }
 
   const {
-    paperWidth = '2in',
-    paperHeight = '6in',
+    layout = 'thermal', // 'thermal', 'standard-single', 'standard-double'
     title = 'Photobooth Strip',
   } = options
 
   return new Promise((resolve, reject) => {
     try {
       // Create a new window for printing
-      const printWindow = window.open('', '_blank', 'width=600,height=800')
+      const printWindow = window.open('', '_blank', 'width=800,height=900')
       
       if (!printWindow) {
         reject(new Error('Failed to open print window. Please allow popups for this site.'))
         return
       }
 
-      // Write HTML content with print-optimized CSS
+      // Generate page styles and markup based on chosen layout
+      let layoutStyles = ''
+      let layoutMarkup = ''
+
+      if (layout === 'thermal') {
+        layoutStyles = `
+          @page {
+            size: 2in 6in;
+            margin: 0;
+          }
+          body {
+            background: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+          }
+          .print-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          .print-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+          }
+          .print-instructions {
+            display: none;
+          }
+        `
+        layoutMarkup = `
+          <div class="print-container">
+            <img src="${dataURL}" alt="Photo Strip" class="print-image" />
+          </div>
+        `
+      } else if (layout === 'standard-single') {
+        layoutStyles = `
+          @page {
+            size: auto;
+            margin: 0;
+          }
+          body {
+            background: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+          }
+          .print-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+          }
+          .print-image {
+            height: 96vh;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          }
+          @media print {
+            .print-image {
+              box-shadow: none;
+            }
+            .print-instructions {
+              display: none;
+            }
+          }
+          .print-instructions {
+            position: absolute;
+            bottom: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 10px;
+            color: #64748b;
+          }
+        `
+        layoutMarkup = `
+          <div class="print-container">
+            <img src="${dataURL}" alt="Photo Strip" class="print-image" />
+            <div class="print-instructions">
+              <p>Classic Single Layout Centered — Kafka Photobooth</p>
+            </div>
+          </div>
+        `
+      } else if (layout === 'standard-double') {
+        layoutStyles = `
+          @page {
+            size: auto;
+            margin: 0;
+          }
+          body {
+            background: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+          }
+          .print-double-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12%;
+            padding: 40px;
+          }
+          .print-image {
+            height: 94vh;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          }
+          @media print {
+            .print-image {
+              box-shadow: none;
+            }
+            .print-instructions {
+              display: none;
+            }
+          }
+          .print-instructions {
+            position: absolute;
+            bottom: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 10px;
+            color: #64748b;
+            text-align: center;
+            width: 100%;
+          }
+        `
+        layoutMarkup = `
+          <div class="print-double-container">
+            <img src="${dataURL}" alt="Photo Strip 1" class="print-image" />
+            <img src="${dataURL}" alt="Photo Strip 2" class="print-image" />
+          </div>
+          <div class="print-instructions">
+            <p>Double Strip Side-by-Side Layout — Perfect for Guestbooks</p>
+          </div>
+        `
+      }
+
+      // Write layout-focused DOM structure
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -42,103 +202,46 @@ export async function printStrip(dataURL, options = {}) {
               padding: 0;
               box-sizing: border-box;
             }
-
-            body {
-              margin: 0;
-              padding: 0;
-              background: #f0f0f0;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-            }
-
-            .print-container {
-              text-align: center;
-              padding: 20px;
-            }
-
-            .print-image {
-              max-width: 100%;
-              height: auto;
-              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            }
-
-            .print-instructions {
-              margin-top: 20px;
-              font-family: Arial, sans-serif;
-              color: #333;
-            }
-
-            @media print {
-              @page {
-                size: ${paperWidth} ${paperHeight};
-                margin: 0;
-              }
-
-              body {
-                background: white;
-                margin: 0;
-                padding: 0;
-              }
-
-              .print-container {
-                padding: 0;
-                margin: 0;
-              }
-
-              .print-image {
-                width: 100%;
-                height: 100%;
-                max-width: none;
-                box-shadow: none;
-                display: block;
-              }
-
-              .print-instructions {
-                display: none;
-              }
-            }
+            ${layoutStyles}
           </style>
         </head>
         <body>
-          <div class="print-container">
-            <img src="${dataURL}" alt="Photo Strip" class="print-image" />
-            <div class="print-instructions">
-              <p><strong>Print Instructions:</strong></p>
-              <p>Paper size: ${paperWidth} × ${paperHeight}</p>
-              <p>Make sure your printer is set to the correct paper size</p>
-              <p>Click Print when ready</p>
-            </div>
-          </div>
+          ${layoutMarkup}
         </body>
         </html>
       `)
 
       printWindow.document.close()
 
-      // Wait for image to load before printing
-      const img = printWindow.document.querySelector('.print-image')
-      
-      img.onload = () => {
-        // Small delay to ensure rendering is complete
-        setTimeout(() => {
-          printWindow.focus()
-          printWindow.print()
-          
-          // Close window after print dialog is closed
-          // Note: This may not work in all browsers due to security restrictions
+      // Wait for image loading
+      const imgs = printWindow.document.querySelectorAll('.print-image')
+      let loadedCount = 0
+
+      const onImageLoad = () => {
+        loadedCount++
+        if (loadedCount === imgs.length) {
           setTimeout(() => {
-            printWindow.close()
-            resolve(true)
-          }, 1000)
-        }, 500)
+            printWindow.focus()
+            printWindow.print()
+            setTimeout(() => {
+              printWindow.close()
+              resolve(true)
+            }, 1000)
+          }, 600)
+        }
       }
 
-      img.onerror = () => {
-        printWindow.close()
-        reject(new Error('Failed to load image for printing'))
-      }
+      imgs.forEach(img => {
+        if (img.complete) {
+          onImageLoad()
+        } else {
+          img.onload = onImageLoad
+          img.onerror = () => {
+            printWindow.close()
+            reject(new Error('Failed to load image for printing'))
+          }
+        }
+      })
 
     } catch (error) {
       console.error('Print error:', error)

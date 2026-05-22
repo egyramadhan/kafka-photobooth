@@ -56,79 +56,121 @@ function QRSharePanel({ url, onClose, autoHideDelay = 60000 }) {
   if (!url) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full relative">
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+      {/* Decorative Orb */}
+      <div className="absolute w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+      <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 max-w-md w-full relative shadow-2xl">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+          className="absolute top-5 right-5 text-slate-400 hover:text-white bg-slate-950/40 hover:bg-slate-950/80 border border-slate-850 p-2 rounded-xl transition duration-200"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-white mb-2 text-center">
-          Foto Siap Dibagikan! 🎉
-        </h2>
-        <p className="text-gray-400 text-center mb-6">
-          Scan QR code ini untuk download foto ke HP kamu
-        </p>
+        <div className="text-center mt-2 mb-6">
+          <h2 className="text-xl font-bold text-white tracking-wide flex items-center justify-center space-x-2">
+            <span>Photo is Ready!</span>
+            <span className="animate-bounce">🎉</span>
+          </h2>
+          <p className="text-slate-400 text-xs mt-1 max-w-xs mx-auto">
+            Scan this QR code to download the photo strip directly to your phone.
+          </p>
+        </div>
 
         {/* QR Code Display */}
         {error ? (
-          <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mb-6">
-            <p className="text-red-200 text-center">{error}</p>
+          <div className="bg-red-950/20 border border-red-500/25 rounded-2xl p-6 mb-6">
+            <p className="text-red-300 text-center text-sm">{error}</p>
           </div>
         ) : qrCode ? (
-          <div className="bg-white p-6 rounded-xl mb-6 flex items-center justify-center">
-            <img src={qrCode} alt="QR Code" className="w-64 h-64" />
+          <div className="bg-white p-4 rounded-2xl mb-6 flex items-center justify-center shadow-lg w-fit mx-auto border border-slate-800 relative group">
+            <img src={qrCode} alt="QR Code" className="w-52 h-52 select-none" />
+            <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none rounded-2xl"></div>
           </div>
         ) : (
-          <div className="bg-gray-700 p-6 rounded-xl mb-6 flex items-center justify-center h-80">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-              <p className="text-gray-400">Generating QR code...</p>
+          <div className="bg-slate-950/20 border border-slate-800/40 p-6 rounded-2xl mb-6 flex flex-col items-center justify-center h-60">
+            <div className="relative flex items-center justify-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-400"></div>
             </div>
+            <p className="text-slate-400 text-xs mt-4">Generating QR code...</p>
           </div>
         )}
 
         {/* URL Display */}
-        <div className="bg-gray-700 rounded-lg p-4 mb-4">
-          <p className="text-xs text-gray-400 mb-1">Link Download:</p>
-          <p className="text-sm text-white break-all">{url}</p>
+        <div className="bg-slate-950/40 border border-slate-850 rounded-xl p-3.5 mb-5 flex items-center justify-between space-x-3">
+          <div className="overflow-hidden">
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Download Link</p>
+            <p className="text-xs text-indigo-300 font-medium truncate mt-0.5 max-w-[240px] font-mono">{url}</p>
+          </div>
+          <div className="w-px h-6 bg-slate-850 flex-shrink-0"></div>
+          <button 
+            onClick={handleCopyLink}
+            className="text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-wider flex-shrink-0 transition duration-200"
+          >
+            {copied ? 'Copied' : 'Copy'}
+          </button>
         </div>
 
         {/* Copy Link Button */}
         <button
           onClick={handleCopyLink}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition flex items-center justify-center"
+          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-3.5 px-6 rounded-xl transition duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2 shadow-lg shadow-indigo-950/20"
         >
           {copied ? (
             <>
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
-              Link Tersalin!
+              <span>Link Copied!</span>
             </>
           ) : (
             <>
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
-              Salin Link
+              <span>Copy Full Link</span>
             </>
           )}
         </button>
 
-        {/* Auto-hide notice */}
+        {/* Auto-hide notice with elegant animated progress bar */}
         {autoHideDelay && (
-          <p className="text-xs text-gray-500 text-center mt-4">
-            Panel ini akan otomatis tertutup dalam {Math.round(autoHideDelay / 1000)} detik
-          </p>
+          <div className="mt-6">
+            <p className="text-[9px] text-slate-500 text-center uppercase tracking-widest font-mono">
+              Auto-closing in {Math.round(autoHideDelay / 1000)}s
+            </p>
+            <div className="w-full h-1 bg-slate-800 rounded-full mt-2.5 overflow-hidden">
+              <div 
+                className="h-full bg-indigo-500 rounded-full animate-progress"
+                style={{ animationDuration: `${autoHideDelay}ms` }}
+              ></div>
+            </div>
+          </div>
         )}
       </div>
+
+      {/* Styles for animation */}
+      <style>{`
+        @keyframes shrink {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+        .animate-progress {
+          animation: shrink linear forwards;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.97); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
     </div>
   )
 }
