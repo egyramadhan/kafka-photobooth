@@ -1,9 +1,11 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { updateSession } from '../services/api'
 
 function DownloadPage() {
   const { fileId } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   
   const [imageUrl, setImageUrl] = useState(null)
   const [isExpired, setIsExpired] = useState(false)
@@ -33,6 +35,14 @@ function DownloadPage() {
           }
         }
 
+        // Track QR scan if session ID is present
+        const sessionId = searchParams.get('session')
+        if (sessionId) {
+          updateSession(sessionId, { qr_scanned: true })
+            .then(() => console.log('QR scan tracked'))
+            .catch(err => console.error('Failed to track QR scan:', err))
+        }
+
         setIsLoading(false)
       } catch (err) {
         console.error('Error processing fileId:', err)
@@ -43,7 +53,7 @@ function DownloadPage() {
       setError('No download identifier found')
       setIsLoading(false)
     }
-  }, [fileId])
+  }, [fileId, searchParams])
 
   const handleDownload = async () => {
     if (!imageUrl) return

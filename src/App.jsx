@@ -4,6 +4,8 @@ import SetupPage from './pages/SetupPage'
 import BoothPage from './pages/BoothPage'
 import ResultPage from './pages/ResultPage'
 import DownloadPage from './pages/DownloadPage'
+import DashboardLogin from './pages/DashboardLogin'
+import DashboardPage from './pages/DashboardPage'
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,14 @@ const router = createBrowserRouter([
   {
     path: '/download/:fileId',
     element: <DownloadPage />,
+  },
+  {
+    path: '/dashboard/login',
+    element: <DashboardLogin />,
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardPage />,
   },
 ])
 

@@ -1,9 +1,67 @@
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import CameraSelector from '../components/CameraSelector'
 import EventSettings from '../components/EventSettings'
 
 function SetupPage() {
   const navigate = useNavigate()
+  const [isKioskMode, setIsKioskMode] = useState(false)
+  const [escapeCount, setEscapeCount] = useState(0)
+
+  // Handle escape key presses for kiosk mode exit
+  useEffect(() => {
+    if (!isKioskMode) return
+
+    let escapeTimer = null
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setEscapeCount(prev => {
+          const newCount = prev + 1
+          
+          // Exit kiosk mode after 3 escape presses
+          if (newCount >= 3) {
+            exitKioskMode()
+            return 0
+          }
+          
+          return newCount
+        })
+
+        // Reset counter after 2 seconds
+        clearTimeout(escapeTimer)
+        escapeTimer = setTimeout(() => {
+          setEscapeCount(0)
+        }, 2000)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      clearTimeout(escapeTimer)
+    }
+  }, [isKioskMode])
+
+  const enterKioskMode = async () => {
+    try {
+      await document.documentElement.requestFullscreen()
+      setIsKioskMode(true)
+      console.log('Kiosk mode activated')
+    } catch (error) {
+      console.error('Failed to enter fullscreen:', error)
+      alert('Fullscreen mode is not supported or was denied. Please allow fullscreen access.')
+    }
+  }
+
+  const exitKioskMode = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    }
+    setIsKioskMode(false)
+    setEscapeCount(0)
+    console.log('Kiosk mode deactivated')
+  }
 
   const handleStartBooth = () => {
     navigate('/booth')
@@ -48,6 +106,38 @@ function SetupPage() {
               <span className="text-base tracking-wider uppercase font-semibold">Start Session</span>
             </div>
           </button>
+
+          {/* Kiosk Mode Toggle */}
+          <div className="mt-6 pt-6 border-t border-slate-800/50">
+            {!isKioskMode ? (
+              <button
+                onClick={enterKioskMode}
+                className="w-full bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 text-slate-300 hover:text-white font-semibold py-3 px-5 rounded-xl text-sm transition duration-200 flex items-center justify-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+                <span>Activate Kiosk Mode</span>
+              </button>
+            ) : (
+              <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 text-emerald-300 mb-2">
+                  <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-bold text-sm">Kiosk Mode Active</span>
+                </div>
+                <p className="text-xs text-slate-400 mb-3">
+                  Press <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-300 font-mono">Esc</kbd> three times to exit
+                </p>
+                {escapeCount > 0 && (
+                  <div className="text-xs text-amber-400 font-semibold animate-pulse">
+                    {escapeCount}/3 - Press Esc {3 - escapeCount} more time{3 - escapeCount !== 1 ? 's' : ''}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

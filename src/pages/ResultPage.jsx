@@ -1,9 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCanvas } from '../hooks/useCanvas'
 import { useEventStore } from '../store/eventStore'
 import { uploadStrip } from '../utils/uploadHelper'
 import { printStrip } from '../utils/printHelper'
+import { createSession, updateSession } from '../services/api'
+import { isOnline } from '../utils/offlineHelper'
 import PhotoStrip from '../components/PhotoStrip'
 import QRSharePanel from '../components/QRSharePanel'
 
@@ -21,6 +23,9 @@ function ResultPage() {
   const [showPrintModal, setShowPrintModal] = useState(false)
   const [printLayout, setPrintLayout] = useState('standard-single') // 'thermal', 'standard-single', 'standard-double'
 
+  // Session tracking
+  const [sessionId, setSessionId] = useState(null)
+
   // Get photos from navigation state
   const photos = location.state?.photos || []
   
@@ -28,12 +33,58 @@ function ResultPage() {
   const { eventName, footerText, selectedTemplate } = useEventStore()
   const date = new Date().toLocaleDateString()
 
-  const handleExportPNG = () => {
+  // Create session record when component mounts
+  useEffect(() => {
+    const initSession = async () => {
+      if (photos.length === 0) return
+
+      try {
+        const session = await createSession({
+          event_name: eventName || 'Untitled Event',
+          photos_taken: photos.length,
+          template_id: selectedTemplate,
+          footer_text: footerText,
+        })
+
+        if (session?.id) {
+          setSessionId(session.id)
+          console.log('Session created:', session.id)
+        }
+      } catch (error) {
+        console.error('Failed to create session:', error)
+        // Don't block UI if tracking fails
+      }
+    }
+
+    initSession()
+  }, []) // Run once on mount
+
+  const handleExportPNG = async () => {
     exportPNG(`photobooth-${Date.now()}.png`)
+    
+    // Track download action
+    if (sessionId) {
+      try {
+        await updateSession(sessionId, { downloaded: true })
+        console.log('Download tracked')
+      } catch (error) {
+        console.error('Failed to track download:', error)
+      }
+    }
   }
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     exportPDF(`photobooth-${Date.now()}.pdf`)
+    
+    // Track PDF export action
+    if (sessionId) {
+      try {
+        await updateSession(sessionId, { pdf_exported: true })
+        console.log('PDF export tracked')
+      } catch (error) {
+        console.error('Failed to track PDF export:', error)
+      }
+    }
   }
 
   const handleNewSession = () => {
@@ -45,6 +96,12 @@ function ResultPage() {
   }
 
   const handleShareQR = async () => {
+    // Check if online
+    if (!isOnline()) {
+      setUploadError('No internet connection. QR sharing requires an active connection. Please use local download instead.')
+      return
+    }
+
     try {
       setIsUploading(true)
       setUploadError(null)
@@ -61,7 +118,9 @@ function ResultPage() {
         console.log(`Upload progress: ${progress}%`)
       })
 
-      setUploadUrl(url)
+      // Append session ID to URL for tracking QR scans
+      const urlWithSession = sessionId ? `${url}?session=${sessionId}` : url
+      setUploadUrl(urlWithSession)
       setIsUploading(false)
     } catch (error) {
       console.error('Share error:', error)
